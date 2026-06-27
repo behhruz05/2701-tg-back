@@ -8,7 +8,9 @@ export const swaggerSpec = {
       'GramJS orqali haqiqiy Telegramga ulanadigan backend. ' +
       'Login qilgach olingan `session` stringini "Authorize" tugmasi orqali kiriting.',
   },
-  servers: [{ url: 'http://localhost:5987', description: 'Local' }],
+  // Nisbiy URL — Swagger qaysi domendan ochilsa, o'shanga so'rov yuboradi
+  // (ham http://localhost, ham Railway https domeni avtomatik ishlaydi).
+  servers: [{ url: '/', description: 'Joriy server' }],
   components: {
     securitySchemes: {
       // session string'ni x-tg-session header'da yuboramiz
