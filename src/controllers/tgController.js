@@ -48,16 +48,38 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
 // @desc   Media (rasm/ovoz/video/fayl) yuborish
 // @route  POST /api/tg/messages/:chatId/media  (multipart: field "media")
-//   body: { caption?, voice?, videoNote?, replyTo? }
+//   body: { caption?, voice?, videoNote?, replyTo?, duration?, width?, height? }
 export const sendMedia = asyncHandler(async (req, res) => {
   if (!req.file) throw new ApiError(400, 'media fayl majburiy');
-  const { caption, voice, videoNote, replyTo } = req.body;
+  const { caption, voice, videoNote, replyTo, duration, width, height } = req.body;
+
+  const isVoice = voice === 'true' || voice === true;
+  const isVideoNote = videoNote === 'true' || videoNote === true;
+
+  // GramJS Node muhitida video metadata (o'lcham/davomiylik) ni o'qiy olmaydi
+  // (_getMetadata bo'sh qaytaradi), shuning uchun dumaloq video uchun atributlarni
+  // o'zimiz beramiz — aks holda w=h=1 bo'lib, Telegram uni buzilgan/oddiy fayl
+  // qilib ko'rsatadi. Dumaloq video uchun w === h bo'lishi shart.
+  let attributes;
+  if (isVideoNote) {
+    const side = Number(width) || Number(height) || 384;
+    attributes = [
+      new Api.DocumentAttributeVideo({
+        roundMessage: true,
+        w: side,
+        h: side,
+        duration: Number(duration) || 0,
+        supportsStreaming: true,
+      }),
+    ];
+  }
 
   const msg = await req.client.sendFile(peer(req), {
     file: req.file.path,
     caption: caption || '',
-    voiceNote: voice === 'true' || voice === true,
-    videoNote: videoNote === 'true' || videoNote === true,
+    voiceNote: isVoice,
+    videoNote: isVideoNote,
+    attributes,
     replyTo: replyTo ? Number(replyTo) : undefined,
   });
   res.status(201).json({ message: serializeMessage(msg) });
