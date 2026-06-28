@@ -63,6 +63,21 @@ export const sendMedia = asyncHandler(async (req, res) => {
   res.status(201).json({ message: serializeMessage(msg) });
 });
 
+// @desc   Joylashuv (location) yuborish — xaritada nuqta
+// @route  POST /api/tg/messages/:chatId/location   body: { lat, lng, replyTo? }
+export const sendLocation = asyncHandler(async (req, res) => {
+  const { lat, lng, replyTo } = req.body;
+  if (lat == null || lng == null) throw new ApiError(400, 'lat va lng majburiy');
+
+  const msg = await req.client.sendFile(peer(req), {
+    file: new Api.InputMediaGeoPoint({
+      geoPoint: new Api.InputGeoPoint({ lat: Number(lat), long: Number(lng) }),
+    }),
+    replyTo: replyTo ? Number(replyTo) : undefined,
+  });
+  res.status(201).json({ message: serializeMessage(msg) });
+});
+
 // @desc   Xabarni o'qildi deb belgilash
 // @route  POST /api/tg/messages/:chatId/read
 export const markRead = asyncHandler(async (req, res) => {

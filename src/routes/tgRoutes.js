@@ -6,6 +6,7 @@ import {
   getMessages,
   sendMessage,
   sendMedia,
+  sendLocation,
   markRead,
   editMessage,
   deleteMessages,
@@ -48,6 +49,7 @@ router.get('/messages/:chatId', getMessages);
 router.get('/messages/:chatId/search', searchMessages);
 router.post('/messages/:chatId', sendMessage);
 router.post('/messages/:chatId/media', upload.single('media'), sendMedia);
+router.post('/messages/:chatId/location', sendLocation);
 router.post('/messages/:chatId/read', markRead);
 router.post('/messages/:chatId/typing', sendTyping);
 router.post('/messages/:chatId/forward', forwardMessages);

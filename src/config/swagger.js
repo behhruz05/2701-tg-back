@@ -97,9 +97,23 @@ export const swaggerSpec = {
         requestBody: { content: { 'multipart/form-data': { schema: { type: 'object', properties: {
           media: { type: 'string', format: 'binary' },
           caption: { type: 'string' },
-          voice: { type: 'boolean' },
-          videoNote: { type: 'boolean' },
+          voice: { type: 'boolean', description: 'Ovozli xabar (.ogg/opus audio yuboring)' },
+          videoNote: { type: 'boolean', description: 'Dumaloq video xabar (kvadrat .mp4 yuboring)' },
+          replyTo: { type: 'integer' },
         } } } } },
+        responses: { 201: { description: '{ message }' } },
+      },
+    },
+    '/api/tg/messages/{chatId}/location': {
+      post: {
+        tags: ['Messages'], summary: 'Joylashuv (location) yuborish',
+        parameters: [{ name: 'chatId', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object',
+          required: ['lat', 'lng'], properties: {
+            lat: { type: 'number', example: 41.311081 },
+            lng: { type: 'number', example: 69.240562 },
+            replyTo: { type: 'integer' },
+          } } } } },
         responses: { 201: { description: '{ message }' } },
       },
     },
