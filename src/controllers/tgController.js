@@ -5,6 +5,7 @@ import {
   serializeMessage,
   serializeUser,
 } from '../telegram/serialize.js';
+import { toRoundMp4, safeUnlink } from '../utils/video.js';
 
 // chatId numerik id yoki @username bo'lishi mumkin. GramJS o'zi resolve qiladi.
 function peer(req) {
@@ -51,38 +52,48 @@ export const sendMessage = asyncHandler(async (req, res) => {
 //   body: { caption?, voice?, videoNote?, replyTo?, duration?, width?, height? }
 export const sendMedia = asyncHandler(async (req, res) => {
   if (!req.file) throw new ApiError(400, 'media fayl majburiy');
-  const { caption, voice, videoNote, replyTo, duration, width, height } = req.body;
+  const { caption, voice, videoNote, replyTo, width } = req.body;
 
   const isVoice = voice === 'true' || voice === true;
   const isVideoNote = videoNote === 'true' || videoNote === true;
 
-  // GramJS Node muhitida video metadata (o'lcham/davomiylik) ni o'qiy olmaydi
-  // (_getMetadata bo'sh qaytaradi), shuning uchun dumaloq video uchun atributlarni
-  // o'zimiz beramiz — aks holda w=h=1 bo'lib, Telegram uni buzilgan/oddiy fayl
-  // qilib ko'rsatadi. Dumaloq video uchun w === h bo'lishi shart.
+  let filePath = req.file.path;
+  let convertedPath = null; // konvertatsiyadan keyin tozalash uchun
   let attributes;
+
   if (isVideoNote) {
-    const side = Number(width) || Number(height) || 384;
+    // Brauzer webm/noto'g'ri nisbatda yozishi mumkin — ffmpeg bilan kvadrat
+    // mp4 (h264) ga o'tkazamiz. GramJS Node'da metadata o'qiy olmagani uchun
+    // o'lcham/davomiylikni ham shu yerdan aniq beramiz.
+    const side = Number(width) || 384;
+    const out = await toRoundMp4(filePath, side);
+    convertedPath = out.path;
+    filePath = out.path;
     attributes = [
       new Api.DocumentAttributeVideo({
         roundMessage: true,
-        w: side,
-        h: side,
-        duration: Number(duration) || 0,
+        w: out.side,
+        h: out.side,
+        duration: out.duration,
         supportsStreaming: true,
       }),
     ];
   }
 
-  const msg = await req.client.sendFile(peer(req), {
-    file: req.file.path,
-    caption: caption || '',
-    voiceNote: isVoice,
-    videoNote: isVideoNote,
-    attributes,
-    replyTo: replyTo ? Number(replyTo) : undefined,
-  });
-  res.status(201).json({ message: serializeMessage(msg) });
+  try {
+    const msg = await req.client.sendFile(peer(req), {
+      file: filePath,
+      caption: caption || '',
+      voiceNote: isVoice,
+      videoNote: isVideoNote,
+      attributes,
+      replyTo: replyTo ? Number(replyTo) : undefined,
+    });
+    res.status(201).json({ message: serializeMessage(msg) });
+  } finally {
+    // Konvertatsiya natijasini (vaqtinchalik mp4) tozalaymiz.
+    safeUnlink(convertedPath);
+  }
 });
 
 // @desc   Joylashuv (location) yuborish — xaritada nuqta
