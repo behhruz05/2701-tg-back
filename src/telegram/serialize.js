@@ -113,6 +113,8 @@ export function serializeDialog(d) {
     archived: !!d.archived,
     username: entity.username || '',
     verified: !!entity.verified,
+    // Avatar bormi? Bo'lsa frontend /api/tg/avatar/:id ni so'raydi.
+    photo: !!entity.photo,
     lastMessage: d.message ? serializeMessage(d.message) : null,
     date: d.date ? d.date * 1000 : null,
   };
@@ -130,6 +132,7 @@ export function serializeUser(u) {
     bot: !!u.bot,
     premium: !!u.premium,
     verified: !!u.verified,
+    photo: !!u.photo,
     status: u.status?.className || null,
   };
 }

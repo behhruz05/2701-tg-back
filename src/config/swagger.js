@@ -179,5 +179,12 @@ export const swaggerSpec = {
         parameters: [{ name: 'chatId', in: 'path', required: true, schema: { type: 'string' } }],
         responses: { 200: { description: 'OK' } } },
     },
+    '/api/tg/avatar/{chatId}': {
+      get: { tags: ['Contacts & Search'], summary: 'Profil rasmi (avatar, JPEG)',
+        parameters: [
+          { name: 'chatId', in: 'path', required: true, schema: { type: 'string' }, description: 'id yoki @username' },
+          { name: 'big', in: 'query', schema: { type: 'boolean' }, description: 'Katta o\'lcham' }],
+        responses: { 200: { description: 'Rasm (image/jpeg)' }, 204: { description: 'Rasm yo\'q' } } },
+    },
   },
 };

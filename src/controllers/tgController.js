@@ -209,6 +209,21 @@ export const downloadFile = asyncHandler(async (req, res) => {
   res.send(buffer);
 });
 
+// @desc   Profil rasmini (avatar) yuklab olib, brauzerga uzatish
+// @route  GET /api/tg/avatar/:chatId?big=
+//   Rasm yo'q bo'lsa 204 (No Content) qaytaradi — frontend fallback chizadi.
+export const getAvatar = asyncHandler(async (req, res) => {
+  const entity = await req.client.getEntity(peer(req));
+  const buffer = await req.client.downloadProfilePhoto(entity, {
+    isBig: req.query.big === 'true' || req.query.big === '1',
+  });
+  if (!buffer || !buffer.length) return res.status(204).end();
+
+  res.set('Content-Type', 'image/jpeg');
+  res.set('Cache-Control', 'private, max-age=86400'); // 1 kun keshlaymiz
+  res.send(buffer);
+});
+
 // @desc   "Yozyapti..." holatini yuborish
 // @route  POST /api/tg/messages/:chatId/typing
 export const sendTyping = asyncHandler(async (req, res) => {

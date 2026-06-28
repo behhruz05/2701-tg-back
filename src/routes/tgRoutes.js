@@ -17,6 +17,7 @@ import {
   getContacts,
   getMembers,
   getEntity,
+  getAvatar,
   downloadFile,
   sendTyping,
 } from '../controllers/tgController.js';
@@ -35,6 +36,9 @@ router.get('/contacts', getContacts);
 
 // Bitta entity (user/chat) ma'lumoti
 router.get('/entity/:chatId', getEntity);
+
+// Profil rasmi (avatar)
+router.get('/avatar/:chatId', getAvatar);
 
 // Suhbat a'zolari
 router.get('/chats/:chatId/members', getMembers);
